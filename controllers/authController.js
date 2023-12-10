@@ -3,10 +3,10 @@ const User = require('../models/user');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const jwt = require('jsonwebtoken');
-
+const moment = require('moment');
 exports.postRegister = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, avatar, name, email, password, phone, role, address, status } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             // Chuyển hướng về trang đăng ký với thông báo lỗi
@@ -17,9 +17,16 @@ exports.postRegister = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
+            username: username,
             email: email,
             password: hashedPassword,
-            role: 'user'
+            name: name,
+            phone: phone,
+            status: status,
+            avatar: avatar,
+            address: address,
+            role: role,
+            createAt: moment().format('MM/DD/YYYY, hh:mm:ss')
         });
 
         await newUser.save();
@@ -33,11 +40,11 @@ exports.postRegister = async (req, res) => {
 
 // Cấu hình Passport LocalStrategy
 passport.use(new LocalStrategy(
-    { usernameField: 'email' },
-    async (usename, password, done) => {
+    { usernameField: 'username' },
+    async (username, password, done) => {
         try {
             // Tìm người dùng trong cơ sở dữ liệu theo email
-            const user = await User.findOne({ usename });
+            const user = await User.findOne({ username });
 
             // Kiểm tra người dùng
             if (!user) {
@@ -52,7 +59,7 @@ passport.use(new LocalStrategy(
                     return done(null, user, { token });
                 } else {
                     // Mật khẩu không khớp, trả về thông báo lỗi
-                    return done(null, false, { message: 'Email hoặc mật khẩu không đúng' });
+                    return done(null, false, { message: 'Tài khoản hoặc mật khẩu không đúng' });
                 }
             });
 
@@ -100,7 +107,10 @@ exports.postLogin = (req, res, next) => {
                 return next(err);
             }
             res.cookie('token', info.token, { maxAge: 60 * 60 * 1000 }); // Cookie hết hạn sau 60 phút (60 * 60 * 1000 ms)
-            return res.status(200).json({ data: user });
+            const data = user;
+            // Xóa mật khẩu trong data trả về
+            data.password = undefined;
+            return res.status(200).json({ data: data });
         });
     })(req, res, next);
 }

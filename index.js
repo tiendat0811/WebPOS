@@ -36,7 +36,7 @@ app.use(passport.session());
 const uri = process.env.MONGODB_URI
 
 mongoose.connect(uri, {}).then(() => {
-    console.log('Kết nối cơ sở dữ liệu thành công: ', uri);
+    console.log('Kết nối cơ sở dữ liệu thành công:\n', uri);
 }).catch((error) => {
     console.error('Lỗi kết nối cơ sở dữ liệu:', error);
 });
@@ -67,5 +67,5 @@ app.use('/', require('./routes/home'));
 const PORT = process.env.PORT
 
 app.listen(PORT, () => {
-    console.log(`Server đang chạy ở link: http://localhost:${PORT}`);
+    console.log(`Server đang chạy: http://localhost:${PORT}`);
 });

@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    phone: {
+        type: String,
+        required: true,
+    },
     avatar: {
         type: String,
     },
@@ -45,5 +49,32 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-
+const bcrypt = require('bcrypt');
+const moment = require('moment');
+try {
+    // Tạo tài khoản admin/admin
+    User.findOne({ username: 'admin' }).then(async (user) => {
+        if (!user) {
+            const hashedPassword = await bcrypt.hash('admin', 10);
+            User.create({
+                email: 'admin@gmail.com',
+                username: 'admin',
+                password: hashedPassword,
+                role: 'admin',
+                status: 'active',
+                name: 'Admin',
+                phone: '0123456789',
+                address: 'TP HCM',
+                avatar: '',
+                createAt: moment().format('MM/DD/YYYY, hh:mm:ss')
+            }).then((user) => {
+                console.log('Tạo tài khoản admin thành công');
+            });
+        } else {
+            console.log('Tài khoản admin đã tồn tại');
+        }
+    });
+} catch (error) {
+    console.log(error)
+}
 module.exports = User;
